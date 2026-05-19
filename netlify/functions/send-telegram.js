@@ -3,11 +3,19 @@
     const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-    const params = new URLSearchParams(event.body);
+    if (!TOKEN) {
+      throw new Error("TELEGRAM_BOT_TOKEN не найден в Netlify");
+    }
 
-    const name = params.get("name");
-    const attendance = params.get("attendance");
-    const comment = params.get("comment");
+    if (!CHAT_ID) {
+      throw new Error("TELEGRAM_CHAT_ID не найден в Netlify");
+    }
+
+    const params = new URLSearchParams(event.body || "");
+
+    const name = params.get("name") || "Не указано";
+    const attendance = params.get("attendance") || "Не указано";
+    const comment = params.get("comment") || "—";
 
     const text =
 `💍 Новое подтверждение
@@ -18,9 +26,9 @@
 ${attendance}
 
 💬 Комментарий:
-${comment || "—"}`;
+${comment}`;
 
-    await fetch(
+    const telegramResponse = await fetch(
       `https://api.telegram.org/bot${TOKEN}/sendMessage`,
       {
         method: "POST",
@@ -29,20 +37,32 @@ ${comment || "—"}`;
         },
         body: JSON.stringify({
           chat_id: CHAT_ID,
-          text,
+          text: text,
         }),
       }
     );
 
+    const telegramResult = await telegramResponse.json();
+
+    if (!telegramResponse.ok) {
+      throw new Error(JSON.stringify(telegramResult));
+    }
+
     return {
       statusCode: 200,
-      body: "OK",
+      body: JSON.stringify({
+        ok: true,
+        message: "Отправлено в Telegram"
+      }),
     };
 
   } catch (error) {
     return {
       statusCode: 500,
-      body: error.toString(),
+      body: JSON.stringify({
+        ok: false,
+        error: error.message
+      }),
     };
   }
 };
