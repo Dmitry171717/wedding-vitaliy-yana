@@ -11,7 +11,13 @@
       throw new Error("TELEGRAM_CHAT_ID не найден в Netlify");
     }
 
-    const params = new URLSearchParams(event.body || "");
+    let body = event.body || "";
+
+if (event.isBase64Encoded) {
+  body = Buffer.from(body, "base64").toString("utf8");
+}
+
+const params = new URLSearchParams(body);
 
     const name = params.get("name") || "Не указано";
     const attendance = params.get("attendance") || "Не указано";
