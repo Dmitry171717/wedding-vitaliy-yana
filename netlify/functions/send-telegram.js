@@ -1,4 +1,4 @@
-﻿exports.handler = async (event) => {
+exports.handler = async (event) => {
   try {
     const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -11,17 +11,15 @@
       throw new Error("TELEGRAM_CHAT_ID не найден в Netlify");
     }
 
-    let body = event.body || "";
+    let data = {};
 
-if (event.isBase64Encoded) {
-  body = Buffer.from(body, "base64").toString("utf8");
-}
+    if (event.body) {
+      data = JSON.parse(event.body);
+    }
 
-const params = new URLSearchParams(body);
-
-    const name = params.get("name") || "Не указано";
-    const attendance = params.get("attendance") || "Не указано";
-    const comment = params.get("comment") || "—";
+    const name = data.name || "Не указано";
+    const attendance = data.attendance || "Не указано";
+    const comment = data.comment || "—";
 
     const text =
 `💍 Новое подтверждение
@@ -39,12 +37,12 @@ ${comment}`;
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           chat_id: CHAT_ID,
-          text: text,
-        }),
+          text
+        })
       }
     );
 
@@ -59,7 +57,7 @@ ${comment}`;
       body: JSON.stringify({
         ok: true,
         message: "Отправлено в Telegram"
-      }),
+      })
     };
 
   } catch (error) {
@@ -68,7 +66,7 @@ ${comment}`;
       body: JSON.stringify({
         ok: false,
         error: error.message
-      }),
+      })
     };
   }
 };
