@@ -1466,13 +1466,24 @@ async function sendForm(event) {
   const form = document.getElementById('rsvpForm');
   const button = form.querySelector('button');
 
+  const name = form.querySelector('[name="name"]').value;
+  const attendance = form.querySelector('[name="attendance"]').value;
+  const comment = form.querySelector('[name="comment"]').value;
+
   button.disabled = true;
   button.textContent = 'Отправляем...';
 
   try {
     const response = await fetch('/.netlify/functions/send-telegram', {
       method: 'POST',
-      body: new FormData(form)
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: name,
+        attendance: attendance,
+        comment: comment
+      })
     });
 
     if (!response.ok) {
@@ -1490,6 +1501,3 @@ async function sendForm(event) {
   button.disabled = false;
   button.textContent = 'Отправить ответ';
 }
-  </script>
-</body>
-</html>
